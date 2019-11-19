@@ -1,8 +1,0 @@
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\bin\Debug\Chip8.exe.config
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\obj\Debug\Chip8.csprojResolveAssemblyReference.cache
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\bin\Debug\Chip8.exe
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\bin\Debug\Chip8.pdb
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\obj\Debug\Chip8.exe
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\obj\Debug\Chip8.pdb
-c:\users\josh\documents\visual studio 2015\Projects\Chip8\Chip8\bin\Debug\SDL2.dll
-C:\Users\Josh\documents\visual studio 2015\Projects\Chip8\Chip8\bin\Debug\roms\Paddles.ch8
