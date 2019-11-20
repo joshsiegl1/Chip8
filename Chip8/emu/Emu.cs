@@ -11,9 +11,11 @@ namespace Chip8.emu
         //throwaway
         public bool finished = false;
 
-        const int width = 64;
-        const int height = 32;
-        const int scale = 1; 
+        public bool DrawFlag = false; 
+
+        public const int width = 64;
+        public const int height = 32;
+        public const int scale = 1; 
 
         //current opcode
         ushort opcode;
@@ -30,8 +32,29 @@ namespace Chip8.emu
         //4K memory
         private byte[] memory = new byte[4096];
 
+        byte[] fontset = new byte[80]
+        {
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        }; 
+
         //pixels (black and white only)
         byte[,] gfx = new byte[width, height];
+        public byte[,] GFX { get { return gfx; } }
 
         char delayTimer;
         char soundTimer;
@@ -61,6 +84,11 @@ namespace Chip8.emu
             opcode = 0;
             I = 0;
             sp = 0; 
+
+            for (int i = 0; i < 80; i++)
+            {
+                memory[i] = fontset[i]; 
+            }
         }
 
         public void ProcessCycle()
@@ -105,6 +133,7 @@ namespace Chip8.emu
                                         gfx[x, y] = 0; 
                                     }
                                 }
+                                DrawFlag = true; 
                                 pc += 2;
                                 break;
                             case 0x000E:
@@ -121,7 +150,8 @@ namespace Chip8.emu
                     pc = (ushort)(opcode & 0x0FFF); 
                     break;
                 case 0x2000:
-                    stack[sp++] = pc;  
+                    stack[sp] = pc;
+                    sp++; 
                     pc = (ushort)(opcode & 0x0FFF); 
                     break;
                 case 0x4000:
@@ -246,31 +276,34 @@ namespace Chip8.emu
                     }
                 case 0xD000:
                     {
-                        V[0xF] = 0; 
+                        V[0xF] = 0;
+                        ushort X = V[(opcode & 0x0F00) >> 8];
+                        ushort Y = V[(opcode & 0x00F0) >> 4];
                         byte nBytes = (byte)(opcode & 0x000F);
-                        for (int i = 0; i < nBytes; i++)
+
+                        for (int y = 0; y < nBytes; y++)
                         {
-                            int sprite = memory[I + i]; 
+                            ushort sprite = memory[I + y]; 
                             for (int x = 0; x < 8; x++)
                             {
                                 //loop through scale here, adding s to x and i
                                 //for (int s = 0; s < scale; s++)
                                 //Also multiply X and Y by scale
-                                ushort X = (ushort)(V[((opcode & 0x0F00) >> 8) + x] % width);
-                                ushort Y = (ushort)(V[((opcode & 0x00F0) >> 4) + i] % height);
-                                if ((sprite & (0x80 >> i)) != 0)
+
+                                byte posX = (byte)((x + X) % width);
+                                byte posY = (byte)((y + Y) % height); 
+
+                                if ((sprite & (0x80 >> x)) != 0)
                                 {
-                                    if (gfx[X, Y] == 1)
+                                    if (gfx[X + x, Y + y] == 1)
                                         V[0xF] = 1;
 
-                                    if (gfx[X, Y] == 1)
-                                        gfx[X, Y] = 0;
-                                    else
-                                        gfx[X, Y] = 1; 
+                                    gfx[X + x, Y + y] ^= 1;
                                 }
                             }
                         }
 
+                        DrawFlag = true; 
                         pc += 2; 
                         break; 
                     }

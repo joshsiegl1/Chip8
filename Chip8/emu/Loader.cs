@@ -23,7 +23,7 @@ namespace Chip8.emu
 
         public byte[] LoadFile()
         {
-            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"roms\Paddles.ch8");
+            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"roms\IBM.ch8");
             byte[] file = File.ReadAllBytes(path);
 
             return file; 

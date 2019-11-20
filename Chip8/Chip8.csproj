@@ -55,8 +55,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Content Include="dump.txt" />
+    <Content Include="Paddles_Dump.txt" />
+    <Content Include="IBM_Dump.txt" />
     <Content Include="roms\Paddles.ch8">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="roms\IBM.ch8">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
