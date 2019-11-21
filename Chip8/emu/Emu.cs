@@ -56,8 +56,8 @@ namespace Chip8.emu
         byte[,] gfx = new byte[width, height];
         public byte[,] GFX { get { return gfx; } }
 
-        char delayTimer;
-        char soundTimer;
+        ushort delayTimer;
+        ushort soundTimer;
 
         ushort[] stack = new ushort[16]; 
         byte sp;
@@ -240,6 +240,7 @@ namespace Chip8.emu
                                 }
                             case 0x0005:
                                 {
+
                                     break; 
                                 }
                             case 0x0006:
@@ -256,6 +257,20 @@ namespace Chip8.emu
                                 }
                         }
                         break; 
+                    }
+                case 0x9000:
+                    {
+                        ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                        ushort regIndex_Y = (ushort)((opcode & 0x00F0) >> 4);
+                        if (V[regIndex_X] != V[regIndex_Y])
+                        {
+                            pc += 4; 
+                        }
+                        else
+                        {
+                            pc += 2; 
+                        }
+                        break;
                     }
                 case 0xA000:
                     I = (ushort)(opcode & 0x0FFF);
@@ -305,6 +320,78 @@ namespace Chip8.emu
 
                         DrawFlag = true; 
                         pc += 2; 
+                        break; 
+                    }
+                case 0xF000:
+                    {
+                        var op = (opcode & 0x00FF); 
+                        switch (op)
+                        {
+                            case 0x0007:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    V[regIndex_X] = delayTimer;
+                                    pc += 2;  
+                                    break; 
+                                }
+                            case 0x000A:
+                                {
+                                    break; 
+                                }
+                            case 0x0015:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    delayTimer = V[regIndex_X];
+                                    pc += 2; 
+                                    break; 
+                                }
+                            case 0X0018:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    soundTimer = V[regIndex_X];
+                                    pc += 2; 
+                                    break; 
+                                }
+                            case 0x001E:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    I = (ushort)(I + V[regIndex_X]);
+                                    pc += 2; 
+                                    break; 
+                                }
+                            case 0x0029:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    I = V[regIndex_X];
+                                    pc += 2; 
+                                    break; 
+                                }
+                            case 0x0033:
+                                {
+
+                                    break; 
+                                }
+                            case 0x0055:
+                                {
+                                    ushort maxIndex_X = (ushort)((opcode & 0x0F00) >> 8); 
+                                    for (int i = 0; i < maxIndex_X; i++)
+                                    {
+                                        memory[I + i] = (byte)V[i]; 
+                                    }
+                                    pc += 2; 
+                                    break; 
+                                }
+                            case 0x0065:
+                                {
+                                    ushort maxIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    for (int i = 0; i < maxIndex_X; i++)
+                                    {
+                                        V[i] = memory[I + i]; 
+                                    }
+                                    pc += 2; 
+                                    break; 
+                                }
+                        }
                         break; 
                     }
                 default:
