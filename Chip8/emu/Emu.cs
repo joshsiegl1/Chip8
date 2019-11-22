@@ -11,7 +11,11 @@ namespace Chip8.emu
         //throwaway
         public bool finished = false;
 
-        public bool DrawFlag = false; 
+        public bool DrawFlag = false;
+
+        //These two variables pertain to the Fx0A instruction - Input is handled in Program.cs
+        bool StopAndWaitForKeyPress = false;
+        ushort KeyPressedRegister; 
 
         public const int width = 64;
         public const int height = 32;
@@ -56,6 +60,8 @@ namespace Chip8.emu
         byte[,] gfx = new byte[width, height];
         public byte[,] GFX { get { return gfx; } }
 
+        public byte[] Keys = new byte[16]; 
+
         ushort delayTimer;
         ushort soundTimer;
 
@@ -97,6 +103,24 @@ namespace Chip8.emu
             {
                 finished = true;
                 return; 
+            }
+
+            //Fx0A calls for the stopage of the program until a key is pressed, 
+            //that logic is implemented here. We simply don't run the processesor until 
+            //we detect that a key was placed in the Keys array
+            if (StopAndWaitForKeyPress)
+            {
+                for (int i = 0; i < Keys.Length; i++)
+                {
+                    if (Keys[i] == 1)
+                    {
+                        StopAndWaitForKeyPress = false;
+                        V[KeyPressedRegister] = (ushort)i;
+                        pc += 2; 
+                        break; 
+                    }
+                }
+                return;
             }
 
             //This simply takes two bytes and stores them in an unsigned short, the decimal value of that new value is irrelavent
@@ -322,6 +346,40 @@ namespace Chip8.emu
                         pc += 2; 
                         break; 
                     }
+                case 0xE000:
+                    {
+                        ushort op = (ushort)(opcode & 0x000F); 
+                        switch (op)
+                        {
+                            case 0x000E:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8); 
+                                    if (Keys[V[regIndex_X]] == 1)
+                                    {
+                                        pc += 4; 
+                                    }
+                                    else
+                                    {
+                                        pc += 2; 
+                                    }
+                                    break; 
+                                }
+                            case 0x0001:
+                                {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    if (Keys[V[regIndex_X]] == 0)
+                                    {
+                                        pc += 4;
+                                    }
+                                    else
+                                    {
+                                        pc += 2;
+                                    }
+                                    break; 
+                                }
+                        }
+                        break; 
+                    } 
                 case 0xF000:
                     {
                         var op = (opcode & 0x00FF); 
@@ -336,6 +394,9 @@ namespace Chip8.emu
                                 }
                             case 0x000A:
                                 {
+                                    //Stop the proccessor and wait for a key press
+                                    StopAndWaitForKeyPress = true;
+                                    KeyPressedRegister = (ushort)((opcode & 0x0F00) >> 8); 
                                     break; 
                                 }
                             case 0x0015:
