@@ -13,13 +13,27 @@ namespace Chip8
     {
         static void Draw(Emu emu, IntPtr Renderer)
         {
+            SDL.SDL_Rect rect = new SDL.SDL_Rect();
+            rect.x = 0;
+            rect.y = 0;
+            rect.w = Emu.scale;
+            rect.h = Emu.scale; 
+
             for (int x = 0; x < Emu.width; x++)
             {
+                rect.x = x * Emu.scale; 
                 for (int y = 0; y < Emu.height; y++)
                 {
+                    rect.y = y * Emu.scale; 
                     if (emu.GFX[x, y] == 1)
                     {
-                        SDL.SDL_RenderDrawPoint(Renderer, x, y); 
+                        SDL.SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255); 
+                        SDL.SDL_RenderFillRect(Renderer, ref rect); 
+                    }
+                    else
+                    {
+                        SDL.SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 0);
+                        SDL.SDL_RenderFillRect(Renderer, ref rect);
                     }
                     
                 }
@@ -101,7 +115,10 @@ namespace Chip8
                     }
                 }
 
-                emu.ProcessCycle();
+                if (!emu.DrawFlag)
+                {
+                    emu.ProcessCycle();
+                }
                 if (emu.DrawFlag)
                 {
                     Draw(emu, Renderer);

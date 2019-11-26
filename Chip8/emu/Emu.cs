@@ -17,9 +17,9 @@ namespace Chip8.emu
         bool StopAndWaitForKeyPress = false;
         ushort KeyPressedRegister; 
 
-        public const int width = 64;
-        public const int height = 32;
-        public const int scale = 1; 
+        public const int scale = 8;
+        public static int width = (64 * scale);
+        public static int height = (32 * scale);
 
         //current opcode
         ushort opcode;
@@ -99,11 +99,6 @@ namespace Chip8.emu
 
         public void ProcessCycle()
         {
-            if (pc >= memory.Length - 2)
-            {
-                finished = true;
-                return; 
-            }
 
             //Fx0A calls for the stopage of the program until a key is pressed, 
             //that logic is implemented here. We simply don't run the processesor until 
@@ -178,6 +173,20 @@ namespace Chip8.emu
                     sp++; 
                     pc = (ushort)(opcode & 0x0FFF); 
                     break;
+                case 0x3000:
+                    {
+                        ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                        ushort kk = (ushort)(opcode & 0x00FF); 
+                        if (V[regIndex_X] == kk)
+                        {
+                            pc += 4; 
+                        }
+                        else
+                        {
+                            pc += 2; 
+                        }
+                        break; 
+                    }
                 case 0x4000:
                     {
                         ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
@@ -259,24 +268,80 @@ namespace Chip8.emu
                                     {
                                         V[16] = 0; 
                                     }
-                                    V[regIndex_X] = (ushort)(result & 0x00FF); 
+                                    V[regIndex_X] = (ushort)(result & 0x00FF);
+                                    pc += 2; 
                                     break; 
                                 }
                             case 0x0005:
                                 {
-
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    ushort regIndex_Y = (ushort)((opcode & 0x00F0) >> 4); 
+                                    if (V[regIndex_X] > V[regIndex_Y])
+                                    {
+                                        V[0xF] = 1; 
+                                    }
+                                    else
+                                    {
+                                        V[0xF] = 0; 
+                                    }
+                                    V[regIndex_X] = (ushort)(V[regIndex_X] - V[regIndex_Y]);
+                                    pc += 2; 
                                     break; 
                                 }
                             case 0x0006:
                                 {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    ushort regIndex_Y = (ushort)((opcode & 0x00F0) >> 4); 
+
+                                    if ((V[regIndex_X] & 0x000F) == 1)
+                                    {
+                                        V[0xF] = 1; 
+                                    }
+                                    else
+                                    {
+                                        V[0xF] = 0; 
+                                    }
+
+                                    V[regIndex_X] = (ushort)(V[regIndex_X] / 2);
+                                    pc += 2; 
                                     break; 
                                 }
                             case 0x0007:
                                 {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    ushort regIndex_Y = (ushort)((opcode & 0x00F0) >> 4);
+
+                                    if (V[regIndex_Y] > V[regIndex_X])
+                                    {
+                                        V[0xF] = 1; 
+                                    }
+                                    else
+                                    {
+                                        V[0xF] = 0; 
+                                    }
+
+                                    V[regIndex_X] = (ushort)(V[regIndex_Y] - V[regIndex_X]); 
+
+                                    pc += 2; 
                                     break; 
                                 }
                             case 0x000E:
                                 {
+                                    ushort regIndex_X = (ushort)((opcode & 0x0F00) >> 8);
+                                    ushort regIndex_Y = (ushort)((opcode & 0x00F0) >> 4);
+
+                                    if (((V[regIndex_X] & 0x0F00) >> 8) == 1)
+                                    {
+                                        V[0xF] = 1; 
+                                    }
+                                    else
+                                    {
+                                        V[0xF] = 0; 
+                                    }
+
+                                    V[regIndex_X] = (ushort)(V[regIndex_X] * 2); 
+
+                                    pc += 2; 
                                     break; 
                                 }
                         }
@@ -324,20 +389,17 @@ namespace Chip8.emu
                         {
                             ushort sprite = memory[I + y]; 
                             for (int x = 0; x < 8; x++)
-                            {
-                                //loop through scale here, adding s to x and i
-                                //for (int s = 0; s < scale; s++)
-                                //Also multiply X and Y by scale
-
+                            { 
                                 byte posX = (byte)((x + X) % width);
                                 byte posY = (byte)((y + Y) % height); 
 
                                 if ((sprite & (0x80 >> x)) != 0)
                                 {
-                                    if (gfx[X + x, Y + y] == 1)
-                                        V[0xF] = 1;
+                                        if (gfx[X + x, Y + y] == 1)
+                                            V[0xF] = 1;
 
-                                    gfx[X + x, Y + y] ^= 1;
+                                        gfx[X + x, Y + y] ^= 1;
+                                    
                                 }
                             }
                         }
@@ -460,6 +522,12 @@ namespace Chip8.emu
                     pc += 2; 
                     break; 
             }
+
+            if (delayTimer > 0)
+                delayTimer--;
+
+            if (soundTimer > 0)
+                soundTimer--; 
 
             Console.Write("\n"); 
         }
