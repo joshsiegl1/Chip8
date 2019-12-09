@@ -69,6 +69,12 @@
     <Content Include="roms\Maze [David Winter, 199x].ch8">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="roms\Breakout [Carmelo Cortez, 1979].ch8">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="roms\Rocket Launcher.ch8">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="SDL2.dll">

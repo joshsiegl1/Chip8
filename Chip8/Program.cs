@@ -79,7 +79,7 @@ namespace Chip8
                     return 0xF; 
                 
             }
-            return -1; 
+            return 15; 
         }
 
         static void Main(string[] args)
@@ -115,10 +115,8 @@ namespace Chip8
                     }
                 }
 
-                if (!emu.DrawFlag)
-                {
-                    emu.ProcessCycle();
-                }
+                emu.ProcessCycle();
+                
                 if (emu.DrawFlag)
                 {
                     Draw(emu, Renderer);
